@@ -19,8 +19,6 @@ class Detector:
     goalmax2 = 0
     goalmax3 = 0
 
-
-
     def __init__(self):
         config = ConfigParser.RawConfigParser()
 
@@ -40,9 +38,8 @@ class Detector:
         self.goalmax2 = config.getint('Goal', 'max2')
         self.goalmax3 = config.getint('Goal', 'max3')
 
-
     def ball_coordinates(self, frame):
-        balldetails=[0,0,0]
+        balldetails = [0, 0, 0]
 
         # Convert BGR to HSV
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -69,63 +66,37 @@ class Detector:
                 cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
                 cv2.circle(frame, (int(x), int(y)), 5, (0, 0, 255), -1)
                 balldetails = [x, y, radius]
-        else: balldetails = [0,0,0]
-        cv2.imshow('ballframe',frame)
+        else:
+            balldetails = [0, 0, 0]
+        cv2.imshow('ballframe', frame)
         return balldetails
 
+    def goal_coordinates(self, frame):
+        # Convert BGR to HSV
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv = cv2.GaussianBlur(hsv, (11, 11), 0)
 
+        # define range of orange color in HSV
+        lower_goal = np.array([self.goalmin1, self.goalmin2, self.goalmin3])
+        upper_goal = np.array([self.goalmax1, self.goalmax2, self.goalmax3])
 
+        goalmask = cv2.inRange(hsv, lower_goal, upper_goal)
+        goalmask = cv2.erode(goalmask, None, iterations=2)
+        goalmask = cv2.dilate(goalmask, None, iterations=2)
 
-        # # Convert BGR to HSV
-        # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        # hsv = cv2.GaussianBlur(hsv, (11, 11), 0)
-        #
-        # # define range of orange color in HSV
-        #
-        # lower_goal = np.array([goalmin1, goalmin2, goalmin3])
-        # upper_goal = np.array([goalmax1, goalmax2, goalmax3])
-        #
-        # # Threshold the HSV image to get only orange colors
-        # ballmask = cv2.inRange(hsv, lower_ball, upper_ball)
-        # ballmask = cv2.erode(ballmask, None, iterations=2)
-        # ballmask = cv2.dilate(ballmask, None, iterations=2)
-        #
-        # goalmask = cv2.inRange(hsv, lower_goal, upper_goal)
-        # goalmask = cv2.erode(goalmask, None, iterations=2)
-        # goalmask = cv2.dilate(goalmask, None, iterations=2)
-        #
-        # # Bitwise-AND mask and original image
-        # # res = cv2.bitwise_and(frame, frame, mask=mask)
-        #
-        # ballcontours = cv2.findContours(ballmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        # goalcontours = cv2.findContours(goalmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        # # res = cv2.drawContours(res, cnts, -1, (0, 255, 0), 3)
-        #
-        # if len(ballcontours) > 0:
-        #     # find the largest contour in the mask, then use
-        #     # it to compute the minimum enclosing circle and
-        #     # centroid
-        #     c = max(ballcontours, key=cv2.contourArea)
-        #     ((x, y), radius) = cv2.minEnclosingCircle(c)
-        #     M = cv2.moments(c)
-        #     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        #
-        #     # only proceed if the radius meets a minimum size
-        #     if radius > 10:
-        #         # draw the circle and centroid on the frame,
-        #         # then update the list of tracked points
-        #         cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
-        #         cv2.circle(frame, center, 5, (0, 0, 255), -1)
-        #
-        # if len(goalcontours) > 0:
-        #     # find the largest contour in the mask, then use
-        #     # it to compute the minimum enclosing circle and
-        #     # centroid
-        #     c = max(goalcontours, key=cv2.contourArea)
-        #     rect = cv2.minAreaRect(c)
-        #     box = cv2.boxPoints(rect)
-        #     box = np.int0(box)
-        #     cv2.drawContours(frame, [box], 0, (0, 0, 255), 2)
-        #
-        # cv2.imshow('frame', frame)
-        # # cv2.imshow('res', res)
+        goalcontours = cv2.findContours(goalmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+
+        if len(goalcontours) > 0:
+            # find the largest contour in the mask, then use
+            # it to compute the minimum enclosing circle and
+            # centroid
+            c = max(goalcontours, key=cv2.contourArea)
+            rect = cv2.minAreaRect(c)
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+            cv2.drawContours(frame, [box], 0, (0, 0, 255), 2)
+            goaldetails = [rect[0][0], rect[0][1]]
+        else:
+            goaldetails = [0, 0]
+        cv2.imshow('goalframe', frame)
+        return goaldetails
