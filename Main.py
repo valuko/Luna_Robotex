@@ -1,19 +1,25 @@
+__author__ = 'Ikechukwu Ofodile -- ikechukwu.ofodile@estcube.eu'
+
 import cv2
+import numpy as np
+import math
+import serial
 import time
-from detector import Detector
-from mainboard_controller import MainboardController
-from logic import Logic
+from time import sleep
 
-camera = cv2.VideoCapture(1)
-detect = Detector()
+from Detect import Detector as Detect
+from Motor_controller import Motor
+from Mainboard_Commands import MainboardController
 mainboard = MainboardController()
-logic = Logic(mainboard)
-state = "initiating"
-balldetails = ""
-seeingaball = False
+motor = Motor(mainboard)
 
-
-# right - 0, left - 1, back - 2
+camera = cv2.VideoCapture(0)
+detect = Detect()
+ballseen = False
+state = "ballseen"
+mainboard.dribbler_init()
+sleep(1)
+#mainboard.dribbler_on()
 
 while True:
     (frameready, frame) = camera.read()
@@ -21,22 +27,26 @@ while True:
         balldetails = detect.ball_coordinates(frame)
 
         if balldetails != [0, 0, 0]:
-            seeingaball = True
+            mainboard.dribbler_on()
+            ballseen = True
+            print ('ball seen')
         else:
-            seeingaball = False
+            ballseen = False
             print("Not seeing the ball")
+        if ballseen:
+            state = "movetoball"
 
-        if ((state == "initiating" or state=="circlingaround") and seeingaball): state = "movingtoball"
-        elif (state == "initiating" and seeingaball): state = "circlingaround"
+            motor.movetoball(balldetails)
+        else:
+            mainboard.motor_shut_down()
+            #mainboard.circlearound()
 
-        if state== "movingtoball":
-            logic.movetoball(balldetails)
 
 
     keypress = cv2.waitKey(50) & 0xFF
     if keypress == 27:
         camera.release()
+        mainboard.motor_shut_down()
+        mainboard.dribbler_shut_down()
         cv2.destroyAllWindows()
         break
-    if keypress == 8:
-        mainboard.forwardspeed()
