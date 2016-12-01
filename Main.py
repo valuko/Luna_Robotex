@@ -32,7 +32,6 @@ while True:
             #     seeingaball = False
 
             logic.movetoball(balldetails)
-
         elif state == "aimandshoot":
             goaldetails = detect.goal_coordinates(frame)
             logic.aimandshoot(goaldetails)
@@ -43,6 +42,7 @@ while True:
             state = "movingtoball"
 
         mainboard.sendwheelcommand()
+
         print(state)
 
     keypress = cv2.waitKey(100) & 0xFF
@@ -54,4 +54,4 @@ while True:
     if keypress == 8:
         # mainboard.dribbler_init()
         # time.sleep(3)
-        mainboard.checkforball()
+        ballindribler = True

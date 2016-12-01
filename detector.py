@@ -68,7 +68,7 @@ class Detector:
                 balldetails = [x, y, radius]
         else:
             balldetails = [0, 0, 0]
-        cv2.imshow('ballframe', frame)
+        cv2.imshow('frame', frame)
         return balldetails
 
     def goal_coordinates(self, frame):
@@ -98,5 +98,5 @@ class Detector:
             goaldetails = [rect[0][0], rect[0][1]]
         else:
             goaldetails = [0, 0]
-        cv2.imshow('goalframe', frame)
+        cv2.imshow('frame', frame)
         return goaldetails
