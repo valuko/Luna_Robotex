@@ -8,13 +8,26 @@ camera = cv2.VideoCapture(1)
 detect = Detector()
 mainboard = MainboardController()
 logic = Logic(mainboard)
-state = "movingtoball"
+# Define the states
+STATE_BALL_NOT_FOUND = 'ballnotfound'
+STATE_BALL_FOUND = 'ballfound'
+STATE_GRAB_BALL = 'grabball'
+STATE_BALL_GRABBED = 'ballgrabbed'
+STATE_MOVE_TO_BALL = 'movetoball'
+STATE_FIND_BALL = 'findball'
+STATE_FIND_GOAL = 'findgoal'
+STATE_GOAL_SCORED = 'goalscored'
+STATE_BALL_LOST = 'balllost'
+
+state = STATE_FIND_BALL
 balldetails = ""
 goaldetails = ""
 seeingaball = False
 ballindribler = False
-
+ballclose = False
 # right - 0, left - 1, back - 2
+find_attempts = 0
+fail_attempts = 0
 
 # Possible states: movingtoball, aimandshoot
 
@@ -23,35 +36,62 @@ while True:
 
     if frameready:
 
-        if state == "movingtoball":
+        if state == STATE_FIND_BALL:
+            #scan for ball
             balldetails = detect.ball_coordinates(frame)
+            if logic.isBallFound(balldetails):
+                state = STATE_MOVE_TO_BALL
+                find_attempts = 0
+            else:
+                # Perform further scans for the ball
+                find_attempts += 1
 
-            # if balldetails != [0, 0, 0]:
-            #     seeingaball = True
-            # else:
-            #     seeingaball = False
+        if state == STATE_MOVE_TO_BALL:
+            balldetails = detect.ball_coordinates(frame)
+            if logic.isBallFound(balldetails):
+                fail_attempts = 0
+                logic.movetoball(balldetails)
+                if balldetails[1] > 450:
+                    state = STATE_GRAB_BALL
+            else:
+                fail_attempts += 1
+                print 'ball lost!'
+                if fail_attempts > 10:
+                    # Ball lost state
+                    state = STATE_BALL_LOST
 
-            logic.movetoball(balldetails)
-        elif state == "aimandshoot":
+
+        if state == STATE_GRAB_BALL:
+            mainboard.dribbler_on()
+            ballfound = mainboard.detect_ball_catch()
+            ballindribler = True
+            state = STATE_BALL_GRABBED
+
+        if state == STATE_BALL_GRABBED:
             goaldetails = detect.goal_coordinates(frame)
-            logic.aimandshoot(goaldetails)
+            result = logic.aimandshoot(goaldetails)
+            if result:
+                print "GOAL SCORED!!!"
+                state = STATE_GOAL_SCORED
+                break
 
-        if (ballindribler):
-            state = "aimandshoot"
-        else:
-            state = "movingtoball"
+        if state == STATE_BALL_LOST:
+            mainboard.motor_shut_down()
+            state = STATE_FIND_BALL
 
-        mainboard.sendwheelcommand()
+        if ballindribler:
+            state = STATE_BALL_GRABBED
+        elif balldetails[1] > 450:
+            state = STATE_GRAB_BALL
+
+        #mainboard.sendwheelcommand()
 
         print(state)
 
-    keypress = cv2.waitKey(100) & 0xFF
+    keypress = cv2.waitKey(50) & 0xFF
     if keypress == 27:
         mainboard.stopall()
         camera.release()
         cv2.destroyAllWindows()
         break
-    if keypress == 8:
-        # mainboard.dribbler_init()
-        # time.sleep(3)
-        ballindribler = True
+
