@@ -28,11 +28,14 @@ ballclose = False
 # right - 0, left - 1, back - 2
 find_attempts = 0
 fail_attempts = 0
+mainboard.dribbler_init()
+time.sleep(2)
+#mainboard.charge_kicker()
+#time.sleep(2)
 
 # Possible states: movingtoball, aimandshoot
 
 while True:
-    mainboard.dribbler_init()
     (frameready, frame) = camera.read()
 
     if frameready:
@@ -74,16 +77,17 @@ while True:
             if result:
                 print "GOAL SCORED!!!"
                 state = STATE_GOAL_SCORED
+                mainboard.dribbler_shut_down()
                 break
 
         if state == STATE_BALL_LOST:
             mainboard.motor_shut_down()
             state = STATE_FIND_BALL
 
-        # if ballindribler:
-        #     state = STATE_BALL_GRABBED
-        # elif balldetails[1] > 450:
-        #     state = STATE_GRAB_BALL
+        #if ballindribler:
+        #    state = STATE_BALL_GRABBED
+        #elif balldetails[1] > 450:
+        #    state = STATE_GRAB_BALL
 
         #mainboard.sendwheelcommand()
 
@@ -92,6 +96,7 @@ while True:
     keypress = cv2.waitKey(50) & 0xFF
     if keypress == 27:
         mainboard.motor_shut_down()
+        mainboard.dribbler_shut_down()
         camera.release()
         cv2.destroyAllWindows()
         break

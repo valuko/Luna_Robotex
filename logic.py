@@ -4,8 +4,9 @@ mainboard = ''
 class Logic:
     leftT = 350
     rightT = 290
-    goalMin = 315
-    goalMax = 325
+    goalMin = 110
+    goalMax = 200
+    goal_find_cnt = 0
 
     def __init__(self, mainboard):
         self.mainboard = mainboard
@@ -19,25 +20,35 @@ class Logic:
         else:
             self.mainboard.forwardspeed()
             if balldetails[0] > self.leftT:
-                self.mainboard.turnleft()
+                self.mainboard.turnleft(50)
             elif balldetails[0] < self.rightT:
-                self.mainboard.turnright()
+                self.mainboard.turnright(50)
             elif balldetails[0] >= self.rightT and balldetails[0] <= self.leftT:
                 self.mainboard.backwheel(0)
                 self.mainboard.forwardspeed()
 
     def aimandshoot(self, goaldetails):
-        print (goaldetails)
+        print ('goal:',goaldetails)
         goal_scored = False
         if goaldetails == [0, 0]:
-            self.mainboard.circlearound()
+            self.goal_find_cnt = 0
+            self.mainboard.circlearound(35)
+            #self.mainboard.turnleft(30)
         else:
-            self.mainboard.forwardspeed()
-            if goaldetails[0] > self.goalMax:
-                self.mainboard.turnleft()
-            elif goaldetails[0] < self.goalMin:
-                self.mainboard.turnright()
-            elif (goaldetails[0] >= self.goalMin and goaldetails[0] <= self.goalMax):
-                self.mainboard.kick()
-                goal_scored = True
+            #self.mainboard.forwardspeed()
+            #if goaldetails[0] > self.goalMax:
+            #    self.mainboard.turnleft(40)
+            #elif goaldetails[0] < self.goalMin:
+            #    self.mainboard.turnright(40)
+            #elif (goaldetails[1] >= self.goalMin):
+            if goaldetails[0] < self.goalMin:
+                self.mainboard.forwardspeed(30)
+            elif (goaldetails[1] >= self.goalMin and goaldetails[1] <= self.goalMax):
+                self.goal_find_cnt += 1
+                if self.goal_find_cnt > 7:
+                    self.mainboard.kick()
+                    goal_scored = True
+            else:
+                self.goal_find_cnt = 0
+                self.mainboard.turnright(30)
         return goal_scored

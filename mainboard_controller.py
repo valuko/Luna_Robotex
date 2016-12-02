@@ -20,7 +20,7 @@ class MainboardController:
         self.motor = serial.Serial(self.port, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
         self.currentforwardspeed = 0
 
-    def circlearound(self, speed=80):
+    def circlearound(self, speed=50):
         self.motor.write('ca' + str(speed) + '\n')
 
     def forwardspeed(self, speed=150):
@@ -56,7 +56,7 @@ class MainboardController:
     def kick(self):
         self.motor_shut_down()
         self.charge_kicker()
-        time.sleep(1)
+        time.sleep(3)
         self.motor.write('l\n')
         time.sleep(0.1)
 
