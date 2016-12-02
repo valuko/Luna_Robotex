@@ -4,7 +4,7 @@ from detector import Detector
 from mainboard_controller import MainboardController
 from logic import Logic
 
-camera = cv2.VideoCapture(1)
+camera = cv2.VideoCapture(0)
 detect = Detector()
 mainboard = MainboardController()
 logic = Logic(mainboard)
@@ -32,6 +32,7 @@ fail_attempts = 0
 # Possible states: movingtoball, aimandshoot
 
 while True:
+    mainboard.dribbler_init()
     (frameready, frame) = camera.read()
 
     if frameready:
@@ -79,10 +80,10 @@ while True:
             mainboard.motor_shut_down()
             state = STATE_FIND_BALL
 
-        if ballindribler:
-            state = STATE_BALL_GRABBED
-        elif balldetails[1] > 450:
-            state = STATE_GRAB_BALL
+        # if ballindribler:
+        #     state = STATE_BALL_GRABBED
+        # elif balldetails[1] > 450:
+        #     state = STATE_GRAB_BALL
 
         #mainboard.sendwheelcommand()
 
@@ -90,7 +91,7 @@ while True:
 
     keypress = cv2.waitKey(50) & 0xFF
     if keypress == 27:
-        mainboard.stopall()
+        mainboard.motor_shut_down()
         camera.release()
         cv2.destroyAllWindows()
         break

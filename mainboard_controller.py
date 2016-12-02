@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class MainboardController:
-    port = "COM6"
+    port = "COM3"
     motor = ""
     ball_catch_cmd = "<bl>"
     ball_release_cmd = "<b0>"
@@ -20,20 +20,20 @@ class MainboardController:
         self.motor = serial.Serial(self.port, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
         self.currentforwardspeed = 0
 
-    def circlearound(self, speed=50):
+    def circlearound(self, speed=80):
         self.motor.write('ca' + str(speed) + '\n')
 
-    def forwardspeed(self, speed=100):
+    def forwardspeed(self, speed=150):
         self.motor.write('mf' + str(speed) + '\n')
         self.currentforwardspeed = speed
 
-    def turnleft(self, speed=100):
+    def turnleft(self, speed=150):
         self.backwheel(speed)
 
-    def turnright(self, speed=100):
+    def turnright(self, speed=150):
         self.backwheel(-speed)
 
-    def backwheel(self, speed=100):
+    def backwheel(self, speed=150):
         self.motor.write('t' + str(speed) + '\n')
         self.currentturningspeed = speed
 
@@ -54,8 +54,8 @@ class MainboardController:
         self.motor.write('j\n')
 
     def kick(self):
-        self.charge_kicker()
         self.motor_shut_down()
+        self.charge_kicker()
         time.sleep(1)
         self.motor.write('l\n')
         time.sleep(0.1)

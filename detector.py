@@ -74,17 +74,21 @@ class Detector:
     def goal_coordinates(self, frame):
         # Convert BGR to HSV
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        hsv = cv2.GaussianBlur(hsv, (11, 11), 0)
+        #hsv = cv2.GaussianBlur(hsv, (11, 11), 0)
+        kernel = np.ones((5, 5), np.uint8)
 
         # define range of orange color in HSV
         lower_goal = np.array([self.goalmin1, self.goalmin2, self.goalmin3])
         upper_goal = np.array([self.goalmax1, self.goalmax2, self.goalmax3])
 
         goalmask = cv2.inRange(hsv, lower_goal, upper_goal)
-        goalmask = cv2.erode(goalmask, None, iterations=2)
-        goalmask = cv2.dilate(goalmask, None, iterations=2)
+        #goalmask = cv2.erode(goalmask, None, iterations=2)
+        #goalmask = cv2.dilate(goalmask, None, iterations=2)
+        #goalcontours = cv2.findContours(goalmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
-        goalcontours = cv2.findContours(goalmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+        goalmask = cv2.erode(goalmask, kernel, iterations=2)
+        goalmask = cv2.dilate(goalmask, kernel, iterations=2)
+        goalcontours = cv2.findContours(goalmask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
         if len(goalcontours) > 0:
             # find the largest contour in the mask, then use
