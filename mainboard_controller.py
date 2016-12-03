@@ -53,6 +53,9 @@ class MainboardController:
     def charge_kicker(self):
         self.motor.write('j\n')
 
+    def set_kicker_effect(self, effect_val=5):
+        self.motor.write('n' + str(effect_val) + '\n')
+
     def kick(self):
         self.motor_shut_down()
         self.charge_kicker()
