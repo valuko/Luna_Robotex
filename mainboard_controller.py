@@ -56,6 +56,14 @@ class MainboardController:
     def set_kicker_effect(self, effect_val=5):
         self.motor.write('n' + str(effect_val) + '\n')
 
+    def pause_dribbler(self):
+        """
+        Not sure why this pauses the dribbler but too late to start figuring it out
+        It pauses the dribbler so we dont have to re-init it always
+        :return: null
+        """
+        self.motor.write('d10\n')
+
     def kick(self):
         self.motor_shut_down()
         self.charge_kicker()
