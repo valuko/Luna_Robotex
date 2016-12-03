@@ -30,7 +30,7 @@ class Detector:
         self.ballmax2 = config.getint('Ball', 'max2')
         self.ballmax3 = config.getint('Ball', 'max3')
 
-        config.read('example.cfg')
+        #config.read('example.cfg')
         self.goalmin1 = config.getint('Goal', 'min1')
         self.goalmin2 = config.getint('Goal', 'min2')
         self.goalmin3 = config.getint('Goal', 'min3')
