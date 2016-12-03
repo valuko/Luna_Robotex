@@ -73,7 +73,7 @@ while True:
 
         if state == STATE_BALL_GRABBED:
             goaldetails = detect.goal_coordinates(frame)
-            result = logic.aimandshoot(goaldetails)
+            result = logic.turnandshoot(goaldetails)
             if result:
                 print "GOAL SCORED!!!"
                 state = STATE_GOAL_SCORED
